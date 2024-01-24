@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "jobwebscrapper"
+version = "0.1.0"
+description = "this is tool for scrapping information about jobs from different websits"
+authors = ["danila12315454 <danilaprig@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+beautifulsoup4 = "^4.12.3"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+pytest = "^7.4.4"
+pytest-coverage = "^0.0"
+black = "^23.12.1"
+flake8 = "^7.0.0"
+pylint = "^3.0.3"
+mypy = "^1.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 79
+
+
+[tool.flake8]
+ban-todos = true
+
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers -W error"
+junit_family = "xunit2"
+xfail_strict = true
+testpaths = [
+    "tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning"
+]
+
+
+[tool.mypy]
+strict = true
+
+
+[tool.coverage.run]
+branch = true
+
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
