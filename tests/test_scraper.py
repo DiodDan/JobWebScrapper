@@ -1,5 +1,5 @@
-from src.scraper import dummy
+from src.scraper import LinkedInScrapper
 
 
 def test_init() -> None:
-    assert dummy() == 1
+    assert LinkedInScrapper(key_words="Python Developer", location="Germany")
