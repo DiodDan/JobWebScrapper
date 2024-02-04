@@ -8,8 +8,6 @@ from colorama import Fore, Style
 
 from src.models import Job, create_session_maker
 
-SessionMaker = create_session_maker()
-
 
 def alert(text: str) -> None:
     print(Fore.RED + text, Style.RESET_ALL)
@@ -193,7 +191,7 @@ class LinkedInScrapper(IScrapper):
         print(f"Scraped {len(job_links)} job links")
 
         jobs = self._get_jobs_data(job_links)
-        with SessionMaker() as session:
+        with create_session_maker()() as session:
             for job in jobs:
                 job.add_to_commit(session=session)
             session.commit()
