@@ -8,7 +8,7 @@ extension-pkg-whitelist=
     pydantic
 
 [FORMAT]
-max-line-length=80
+max-line-length=100
 max-module-lines=1000
 
 [BASIC]
