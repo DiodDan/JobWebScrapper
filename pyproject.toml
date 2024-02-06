@@ -10,6 +10,7 @@ python = "^3.12"
 beautifulsoup4 = "^4.12.3"
 sqlalchemy = "^2.0.25"
 colorama = "^0.4.6"
+customtkinter = "^5.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

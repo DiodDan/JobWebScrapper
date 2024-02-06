@@ -1,19 +1,17 @@
 import time
 from abc import ABC, abstractmethod
-from typing import override
+from typing import Callable, override
 
 import requests
 from bs4 import BeautifulSoup, Tag
 from colorama import Fore, Style
+from sqlalchemy.orm import Session
 
 from src.models import Job, create_session_maker
 
 
 def alert(text: str) -> None:
     print(Fore.RED + text, Style.RESET_ALL)
-
-
-alert("Started Process")
 
 
 class IScrapper(ABC):
@@ -28,7 +26,7 @@ class IScrapper(ABC):
         ...
 
     @abstractmethod
-    def scrape(self) -> None:
+    def scrape(self, db_name: str) -> None:
         ...
 
     @abstractmethod
@@ -47,12 +45,20 @@ class IScrapper(ABC):
     def set_location(self, location: str) -> None:
         ...
 
+    @abstractmethod
+    def get_jobs_parse_amount(self) -> int:
+        ...
+
+    @abstractmethod
+    def set_retries(self, retries: int) -> None:
+        ...
+
 
 class LinkedInScrapper(IScrapper):
     @override
     def __init__(  # pylint: disable=R0913
         self,
-        location: str,
+        location: str = "",
         key_words: str = "",
         request_delay: int = 1,
         job_parse_amount: int = 10,
@@ -132,8 +138,12 @@ class LinkedInScrapper(IScrapper):
             duties=prettify(duties),
         )
 
-    def _get_jobs_data(self, job_links: list[str]) -> list[Job]:
-        jobs_parsed: list[Job] = []
+    def _get_jobs_data(
+        self,
+        job_links: list[str],
+        session: Session,
+        on_save_function: Callable[[], None],
+    ) -> None:
         base_job_link = (
             "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/"
         )
@@ -156,9 +166,12 @@ class LinkedInScrapper(IScrapper):
             soup = BeautifulSoup(page_html, "html.parser")
 
             try:
-                jobs_parsed.append(
-                    self._get_job_data_object(soup=soup, job_link=job_link)
+                self._save_job_data(
+                    self._get_job_data_object(soup=soup, job_link=job_link),
+                    session,
+                    on_save_function,
                 )
+
                 retries = self._retries
 
             except (ValueError, AttributeError, BrokenPipeError) as exception:
@@ -167,8 +180,6 @@ class LinkedInScrapper(IScrapper):
                 job_links = [job_link] + job_links
             finally:
                 time.sleep(self._request_delay)
-
-        return jobs_parsed
 
     def _get_job_links(self) -> list[str]:
         job_links: list[str] = []
@@ -184,17 +195,27 @@ class LinkedInScrapper(IScrapper):
             time.sleep(self._request_delay)
         return job_links
 
+    @staticmethod
+    def _save_job_data(
+        job_data: Job, session: Session, on_save_function: Callable[[], None]
+    ) -> None:
+        job_data.add_to_commit(session=session)
+        session.commit()
+        on_save_function()
+
     @override
-    def scrape(self) -> None:
+    def scrape(
+        self, db_name: str, on_save_function: Callable[[], None] = lambda: ...
+    ) -> None:
+        alert("Started Scrapping")
         job_links = self._get_job_links()
 
         print(f"Scraped {len(job_links)} job links")
+        self._job_parse_amount = len(job_links)
 
-        jobs = self._get_jobs_data(job_links)
-        with create_session_maker()() as session:
-            for job in jobs:
-                job.add_to_commit(session=session)
-            session.commit()
+        session_maker = create_session_maker(db_name)
+        with session_maker() as session:
+            self._get_jobs_data(job_links, session, on_save_function)
 
     @override
     def set_request_delay(self, request_delay: int) -> None:
@@ -212,6 +233,15 @@ class LinkedInScrapper(IScrapper):
     def set_location(self, location: str) -> None:
         self._location = location.replace(" ", "%20")
 
+    @override
+    def get_jobs_parse_amount(self) -> int:
+        return self._job_parse_amount
 
-# parser = LinkedInScrapper(location="Germany", key_words="Python Developer")
-# parser.scrape()
+    @override
+    def set_retries(self, retries: int) -> None:
+        self._retries = retries
+
+
+if __name__ == "__main__":
+    parser = LinkedInScrapper(location="Germany", key_words="Python Developer")
+    parser.scrape("jobs")
