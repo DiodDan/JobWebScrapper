@@ -154,12 +154,11 @@ class LinkedInScrapper(IScrapper):
             print("requesting....", len(job_links))
 
             job_link = job_links.pop()
-            job_api_url = base_job_link + job_link.split("-")[-1]
 
-            print(job_api_url)
+            print(base_job_link + job_link.split("-")[-1])
 
             page_html = requests.get(
-                job_api_url,
+                base_job_link + job_link.split("-")[-1],
                 cookies={"lang": "v=2&lang=en-us"},
                 timeout=self._timeout,
             ).content
@@ -174,7 +173,12 @@ class LinkedInScrapper(IScrapper):
 
                 retries = self._retries
 
-            except (ValueError, AttributeError, BrokenPipeError) as exception:
+            except (
+                ValueError,
+                AttributeError,
+                BrokenPipeError,
+                ConnectionError,
+            ) as exception:
                 print(exception)
                 retries -= 1
                 job_links = [job_link] + job_links
@@ -205,7 +209,7 @@ class LinkedInScrapper(IScrapper):
 
     @override
     def scrape(
-        self, db_name: str, on_save_function: Callable[[], None] = lambda: ...
+        self, db_name: str, on_save_function: Callable[[], None] = lambda: None
     ) -> None:
         alert("Started Scrapping")
         job_links = self._get_job_links()
