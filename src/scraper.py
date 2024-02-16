@@ -185,7 +185,6 @@ class LinkedInScrapper(IScrapper):
             finally:
                 time.sleep(self._request_delay)
 
-                
     def _get_job_links(self) -> list[str]:
         job_links: list[str] = []
         while len(job_links) < self._job_parse_amount:
