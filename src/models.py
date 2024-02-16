@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 Base = declarative_base()
 
 
-def create_session_maker() -> Callable[[], Session]:
-    engine = create_engine("sqlite:///jobs.db", echo=True)
+def create_session_maker(data_base_name: str) -> Callable[[], Session]:
+    engine = create_engine(f"sqlite:///{data_base_name}.db", echo=True)
     Base.metadata.create_all(bind=engine)
     return sessionmaker(bind=engine)
 
