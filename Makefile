@@ -18,4 +18,4 @@ lint:
 	mypy $(CODE_FOLDERS) $(TEST_FOLDERS)
 
 test:
-	poetry run pytest --cov=$(CODE_FOLDERS) --cov-fail-under=30
+	poetry run pytest --cov=$(CODE_FOLDERS) --cov-fail-under=50
