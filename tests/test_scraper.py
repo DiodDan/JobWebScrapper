@@ -1,10 +1,8 @@
 from pathlib import Path
 
 import requests_mock
-from customtkinter import CTk
 from sqlalchemy import create_engine, text
 
-from src.app import App
 from src.scraper import LinkedInScrapper
 
 
