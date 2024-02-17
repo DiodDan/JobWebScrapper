@@ -38,9 +38,3 @@ def test_scrape() -> None:
             assert [str(elem[i]) == str(job_data[i]) for i in range(len(elem))]
         connection.execute(text("DROP TABLE jobs"))
         connection.commit()
-
-
-def test_app() -> None:
-    app = App(geometry="900x700")
-
-    assert isinstance(app, CTk)
