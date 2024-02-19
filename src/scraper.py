@@ -72,6 +72,10 @@ class LinkedInScrapper(IScrapper):
         self._timeout = 1000
 
     def _get_link_to_page(self, start: int = 0) -> str:
+        """
+        Generates link to page with list of jobs
+        :param start: index of first job to show
+        """
         base_link = (
             "https://www.linkedin.com/jobs-guest/"
             + "jobs/api/seeMoreJobPostings/search?"
@@ -83,6 +87,10 @@ class LinkedInScrapper(IScrapper):
 
     @staticmethod
     def _get_job_links_from_page(page_html: bytes) -> list[str]:
+        """
+        Scrapes all links to jobs from given page
+        :param page_html: source from which links will be parsed
+        """
         soup = BeautifulSoup(page_html, "html.parser")
         class_id = "base-card__full-link"
         job_kinks = [
@@ -95,6 +103,12 @@ class LinkedInScrapper(IScrapper):
     def _get_job_data_object(  # pylint: disable=R0914
         soup: BeautifulSoup, job_link: str
     ) -> Job:
+        """
+        Gets Data from page given in soup variable
+        :param soup: source from which data will be parsed
+        :param job_link: link to job which will be added into object data
+        """
+
         def prettify(string: str) -> str:
             return string.strip("\n").strip(" ").strip("\n")
 
@@ -144,6 +158,12 @@ class LinkedInScrapper(IScrapper):
         session: Session,
         on_save_function: Callable[[], None],
     ) -> None:
+        """
+        Parses and saves data from links given
+        :param job_links: Links to job pages
+        :param session: ORM session object used for saving data
+        :param on_save_function: function that is called when data is saved
+        """
         base_job_link = (
             "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/"
         )
@@ -186,6 +206,7 @@ class LinkedInScrapper(IScrapper):
                 time.sleep(self._request_delay)
 
     def _get_job_links(self) -> list[str]:
+        """Gets links to jobs"""
         job_links: list[str] = []
         while len(job_links) < self._job_parse_amount:
             response = requests.get(
@@ -203,6 +224,12 @@ class LinkedInScrapper(IScrapper):
     def _save_job_data(
         job_data: Job, session: Session, on_save_function: Callable[[], None]
     ) -> None:
+        """
+        Saves Job info into database
+        :param job_data: Job object to save
+        :param session: ORM session object used for saving data
+        :param on_save_function: function that is called when data is saved
+        """
         job_data.add_to_commit(session=session)
         session.commit()
         on_save_function()
@@ -211,6 +238,11 @@ class LinkedInScrapper(IScrapper):
     def scrape(
         self, db_name: str, on_save_function: Callable[[], None] = lambda: None
     ) -> None:
+        """
+        Scrapes and saves data from website into database
+        :param db_name: name of database to save
+        :param on_save_function: function that is called when data is saved
+        """
         alert("Started Scrapping")
         job_links = self._get_job_links()
 
