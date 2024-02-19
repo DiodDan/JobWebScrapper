@@ -19,3 +19,6 @@ lint:
 
 test:
 	poetry run pytest --cov=$(CODE_FOLDERS) --cov-fail-under=50
+
+build:
+	pyinstaller --onefile --windowed  --icon=icon.ico src/app.py
