@@ -1,0 +1,32 @@
+name: Static Checks
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.12" ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        run: |
+          pip install poetry
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create false
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+      - name: Style checking
+        run: |
+          make build
