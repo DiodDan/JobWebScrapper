@@ -108,6 +108,7 @@ class LinkedInScrapper(IScrapper):
         :param soup: source from which data will be parsed
         :param job_link: link to job which will be added into object data
         """
+
         def prettify(string: str) -> str:
             return string.strip("\n").strip(" ").strip("\n")
 
